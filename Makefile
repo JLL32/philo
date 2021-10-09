@@ -18,7 +18,10 @@ fclean: clean
 
 re: clean all
 
+run: all
+	./philo
+
 test:
 	echo "no test specified"
 
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re test run
