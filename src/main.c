@@ -17,26 +17,31 @@ void put_state(int id, char *state)
 void eating(t_philo *philo)
 {
 	static size_t eating_times = 0;
-	put_state(philo->id, EATING);
-	usleep(philo->time_to_eat);
-	eating_times++;
 	if (eating_times == philo->eating_times)
+	{
 		philo->next = dead;
+	}
 	else
+	{
+		put_state(philo->id, EATING);
+		usleep(philo->time_to_eat);
+		eating_times++;
 		philo->next = sleeping;
+	}
 }
 
 void sleeping(t_philo *philo)
 {
-	put_state(philo->id, THINKING);
+	put_state(philo->id, SLEEPING);
 	usleep(philo->time_to_sleep);
 	philo->next = thinking;
 }
 
 void thinking(t_philo *philo)
 {
+	put_state(philo->id, THINKING);
 	usleep(philo->time_to_die);
-	philo->next = dead;
+	philo->next = eating;
 }
 
 void dead(t_philo *philo)
