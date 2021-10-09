@@ -12,10 +12,11 @@ typedef void state_fn(t_philo *philo);
 
 typedef struct s_philo
 {
-	int id;
-	size_t time_to_eat;
-	size_t time_to_sleep;
-	size_t time_to_die;
+	const int id;
+	const size_t time_to_eat;
+	const size_t time_to_sleep;
+	const size_t life_time;
+	size_t remaining_life_time;
 	size_t eating_times;
 	state_fn *next;
 } t_philo;
