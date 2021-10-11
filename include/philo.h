@@ -16,9 +16,9 @@ typedef struct s_philo
 	const size_t time_to_eat;
 	const size_t time_to_sleep;
 	const size_t life_time;
-	size_t remaining_life_time;
-	size_t eating_times;
+	size_t first_starting_time;
 	size_t starting_time;
+	size_t eating_times;
 	state_fn *next;
 } t_philo;
 
