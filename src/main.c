@@ -1,4 +1,5 @@
 #include "../include/philo.h"
+#include <pthread.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/_types/_size_t.h>
@@ -107,26 +108,48 @@ void dead(t_philo *philo)
 	philo->next = NULL;
 }
 
-void init(t_philo *philo)
+void *init(void *p)
 {
-	philo->first_starting_time = get_time();
-	philo->starting_time = philo->first_starting_time;
+	t_philo *philo = p;
+	philo->starting_time = get_time();
 	// NOTE: what to do if eating time is 0, should the philo start thinking until time is out?
 	while(philo->next)
 	{
 		philo->next(philo);
 	}
+	return philo;
 }
 
 int main(void) {
+
+	const size_t starting_time = get_time();
+
 	t_philo philo = {
 		.id = 1,
 		.time_to_eat = 300,
 		.time_to_sleep = 300,
-		.life_time = 3300,
+		.life_time = 3000,
 		.eating_times = 3,
-		.starting_time = 0,
+		.starting_time = starting_time,
+		.first_starting_time = starting_time,
 		.next = eating,
 	};
-	init(&philo);
+
+	t_philo philo2 = {
+		.id = 2,
+		.time_to_eat = 300,
+		.time_to_sleep = 300,
+		.life_time = 3000,
+		.eating_times = 3,
+		.starting_time = starting_time,
+		.first_starting_time = starting_time,
+		.next = eating,
+	};
+
+	pthread_t thread1;
+	pthread_t thread2;
+	pthread_create(&thread1, NULL, init, &philo);
+	pthread_create(&thread2, NULL, init, &philo2);
+	pthread_join(thread1, NULL);
+	pthread_join(thread2, NULL);
 }
