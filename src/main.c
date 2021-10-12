@@ -160,16 +160,18 @@ void panic(char *err_msg)
 	exit(EXIT_FAILURE);
 }
 
-t_philo *create_philos(t_data data)
+t_philo **create_philos(t_data data)
 {
 	t_philo **philos;
-	int i;
+	size_t i;
+
 	philos = malloc(data.n_philo * sizeof(t_philo *));
+	i = 0;
 	while(i < data.n_philo)
 	{
 		philos[i] = malloc(sizeof(t_philo));
-		*philos[i] = (t_philo){
-			.id = 1,
+		memcpy(philos[i], &(t_philo){
+			.id = i + 1,
 			.time_to_eat = data.time_to_eat,
 			.time_to_sleep = data.time_to_sleep,
 			.life_time = data.life_time,
@@ -177,7 +179,8 @@ t_philo *create_philos(t_data data)
 			.starting_time = 0,
 			.first_starting_time = 0,
 			.next = eating,
-		};
+			.display_mutex = NULL,
+		}, sizeof(t_philo)); // NOTE: replace memcpy later
 		i++;
 	}
 	return philos;
@@ -191,66 +194,26 @@ int main(int argc, char **argv) {
 	const size_t starting_time = get_time();
 	if (err)
 		panic("Invalid arguments 😱");
-	const t_philo *philo = create_philos(data);
+	t_philo **philos = create_philos(data);
+	/* init_philos(create_philos(data)); */
 	pthread_mutex_init(&display, NULL);
-	t_philo philo = {
-		.id = 1,
-		.time_to_eat = data.time_to_eat,
-		.time_to_sleep = data.time_to_sleep,
-		.life_time = data.life_time,
-		.eating_times = data.eating_times,
-		.starting_time = starting_time,
-		.first_starting_time = starting_time,
-		.next = eating,
-		.display_mutex = &display,
-	};
+	pthread_t thread[data.n_philo];
+	size_t i = 0;
+	while(i < data.n_philo)
+	{
+		philos[i]->starting_time = starting_time;
+		philos[i]->first_starting_time = starting_time;
+		philos[i]->display_mutex = &display;
+		pthread_create(&thread[i], NULL, init, philos[i]);
+		i++;
+	}
 
-	t_philo philo2 = {
-		.id = 2,
-		.time_to_eat = data.time_to_eat,
-		.time_to_sleep = data.time_to_sleep,
-		.life_time = data.life_time,
-		.eating_times = data.eating_times,
-		.starting_time = starting_time,
-		.first_starting_time = starting_time,
-		.next = eating,
-		.display_mutex = &display,
-	};
-
-	t_philo philo3 = {
-		.id = 3,
-		.time_to_eat = data.time_to_eat,
-		.time_to_sleep = data.time_to_sleep,
-		.life_time = data.life_time,
-		.eating_times = data.eating_times,
-		.starting_time = starting_time,
-		.first_starting_time = starting_time,
-		.next = eating,
-		.display_mutex = &display,
-	};
-
-	t_philo philo4 = {
-		.id = 4,
-		.time_to_eat = data.time_to_eat,
-		.time_to_sleep = data.time_to_sleep,
-		.life_time = data.life_time,
-		.eating_times = data.eating_times,
-		.starting_time = starting_time,
-		.first_starting_time = starting_time,
-		.next = eating,
-		.display_mutex = &display,
-	};
-
-	pthread_t thread1;
-	pthread_t thread2;
-	pthread_t thread3;
-	pthread_t thread4;
-	pthread_create(&thread1, NULL, init, &philo);
-	pthread_create(&thread2, NULL, init, &philo2);
-	pthread_create(&thread3, NULL, init, &philo3);
-	pthread_create(&thread4, NULL, init, &philo4);
-	pthread_join(thread1, NULL);
-	pthread_join(thread2, NULL);
-	pthread_join(thread3, NULL);
-	pthread_join(thread4, NULL);
+	i = 0;
+	while (i < data.n_philo)
+	{
+		pthread_join(thread[i], NULL);
+		i++;
+	}
+	// freee philos and the data inside
+	// free pthread_t
 }
