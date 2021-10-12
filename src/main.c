@@ -160,18 +160,18 @@ void panic(char *err_msg)
 	exit(EXIT_FAILURE);
 }
 
-t_philo **create_philos(t_data data)
+t_philo *create_philos(t_data data)
 {
-	t_philo **philos;
+	t_philo *philos;
 	size_t i;
 
-	philos = malloc(data.n_philo * sizeof(t_philo *));
+	philos = malloc(data.n_philo * sizeof(*philos));
 	i = 0;
 	while(i < data.n_philo)
 	{
-		philos[i] = malloc(sizeof(t_philo));
-		memcpy(philos[i], &(t_philo){
+		memcpy(&philos[i], &(t_philo){
 			.id = i + 1,
+			.thread_id = 0,
 			.time_to_eat = data.time_to_eat,
 			.time_to_sleep = data.time_to_sleep,
 			.life_time = data.life_time,
@@ -194,24 +194,22 @@ int main(int argc, char **argv) {
 	const size_t starting_time = get_time();
 	if (err)
 		panic("Invalid arguments 😱");
-	t_philo **philos = create_philos(data);
+	t_philo *philos = create_philos(data);
 	/* init_philos(create_philos(data)); */
 	pthread_mutex_init(&display, NULL);
-	pthread_t thread[data.n_philo];
 	size_t i = 0;
 	while(i < data.n_philo)
 	{
-		philos[i]->starting_time = starting_time;
-		philos[i]->first_starting_time = starting_time;
-		philos[i]->display_mutex = &display;
-		pthread_create(&thread[i], NULL, init, philos[i]);
+		philos[i].starting_time = starting_time;
+		philos[i].first_starting_time = starting_time;
+		philos[i].display_mutex = &display;
+		pthread_create(&(philos[i].thread_id), NULL, init, &philos[i]);
 		i++;
 	}
-
 	i = 0;
 	while (i < data.n_philo)
 	{
-		pthread_join(thread[i], NULL);
+		pthread_join(philos[i].thread_id, NULL);
 		i++;
 	}
 	// freee philos and the data inside
