@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/_pthread/_pthread_mutex_t.h>
 #include <sys/_types/_size_t.h>
 #include <sys/_types/_timeval.h>
 #include <unistd.h>
@@ -181,10 +182,29 @@ t_philo *create_philos(t_data data)
 			.first_starting_time = 0,
 			.next = eating,
 			.display_mutex = NULL,
+			.l_fork = NULL,
+			.r_fork = NULL,
 		}, sizeof(t_philo)); // NOTE: replace memcpy later
 		i++;
 	}
 	return philos;
+}
+
+pthread_mutex_t *create_forks(size_t n, int *err)
+{
+	pthread_mutex_t *forks;
+	size_t i;
+	
+	forks = malloc(sizeof(*forks) * n);
+	i = 0;
+	while(i < n)
+	{
+		*err = pthread_mutex_init(&forks[i], NULL);
+		if (*err)
+			return NULL;
+		i++;
+	}
+	return (forks);
 }
 
 void start_simulation(t_data data, int *err)
@@ -193,6 +213,7 @@ void start_simulation(t_data data, int *err)
 	size_t i;
 	const size_t starting_time = get_time();
 	t_philo *philo_list = create_philos(data);
+	pthread_mutex_t *forks = create_forks(data.n_philo, err);
 
 	pthread_mutex_init(&display, NULL);
 	i = 0;
@@ -201,6 +222,8 @@ void start_simulation(t_data data, int *err)
 		philo_list[i].starting_time = starting_time;
 		philo_list[i].first_starting_time = starting_time;
 		philo_list[i].display_mutex = &display;
+		philo_list[i].l_fork = &forks[i];
+		philo_list[i].r_fork = &forks[(i + 1) % data.n_philo];
 		*err = pthread_create(&(philo_list[i].thread_id), NULL, init, &philo_list[i]);
 		if (*err)
 			return ;

@@ -18,6 +18,8 @@ typedef struct s_philo
 	const size_t time_to_eat;
 	const size_t time_to_sleep;
 	const size_t life_time;
+	pthread_mutex_t *l_fork;
+	pthread_mutex_t *r_fork;
 	pthread_mutex_t *display_mutex;
 	size_t first_starting_time;
 	size_t starting_time;
