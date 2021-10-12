@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/_types/_size_t.h>
 #include <sys/_types/_timeval.h>
 #include <unistd.h>
@@ -13,9 +14,9 @@
 #define SLEEPING "is sleeping"
 #define THINKING "is thinking"
 #define DEAD "died"
-#include <string.h>
 
-pthread_mutex_t display;
+#include "parse_arg.h"
+
 
 void block_thread(size_t ms)
 {
@@ -38,11 +39,11 @@ size_t time_elapsed(size_t starting_time)
 
 void put_state(const t_philo *philo, char *state)
 {
-	pthread_mutex_lock(&display);
+	pthread_mutex_lock(philo->display_mutex);
 	printf("%lu\t\t %d %s\n", time_elapsed(philo->first_starting_time), philo->id, state);
-	if (strcmp(state, "died") == 0) // NOTE: replace this function later
+	if (philo->next == NULL)
 		exit(0);
-	pthread_mutex_unlock(&display);
+	pthread_mutex_unlock(philo->display_mutex);
 }
 
 /*
@@ -111,8 +112,8 @@ void thinking(t_philo *philo)
 
 void dead(t_philo *philo)
 {
-	put_state(philo, DEAD);
 	philo->next = NULL;
+	put_state(philo, DEAD);
 }
 
 void *init(void *p)
@@ -127,9 +128,57 @@ void *init(void *p)
 	return philo;
 }
 
-int main(void) {
+t_data get_data(int argc, char** argv, int *err)
+{
+	size_t n_philo;
+	size_t life_time;
+	size_t time_to_eat;
+	size_t time_to_sleep;
+	size_t eating_times;
 
+	if (argc < 5 || argc > 6)
+	{
+		*err = 1;
+		return (t_data){};
+	}
+	n_philo = ft_atoi_pos(argv[1]);
+	life_time = ft_atoi_pos(argv[2]);
+	time_to_eat = ft_atoi_pos(argv[3]);
+	time_to_sleep = ft_atoi_pos(argv[4]);
+	if (argc == 5)
+		eating_times = 1;
+	else
+		eating_times = ft_atoi_pos(argv[5]);
+	if (n_philo == -1 || life_time == -1 || time_to_eat == -1 || time_to_sleep == -1
+		|| eating_times == -1)
+	{
+		*err = 1;
+		return (t_data){};
+	}
+	return (t_data)
+	{
+		.n_philo = n_philo,
+		.life_time = life_time,
+		.time_to_eat = time_to_eat,
+		.time_to_sleep = time_to_sleep,
+		.eating_times = eating_times,
+	};
+}
+
+void panic(char *err_msg)
+{
+	write(0, err_msg, strlen(err_msg));
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char **argv) {
+
+	pthread_mutex_t display;
+	static int err;
+	const t_data data = get_data(argc, argv, &err);
 	const size_t starting_time = get_time();
+	if (err)
+		panic("Invalid arguments 😱");
 	pthread_mutex_init(&display, NULL);
 	t_philo philo = {
 		.id = 1,
@@ -140,6 +189,7 @@ int main(void) {
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
+		.display_mutex = &display,
 	};
 
 	t_philo philo2 = {
@@ -151,6 +201,7 @@ int main(void) {
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
+		.display_mutex = &display,
 	};
 
 	t_philo philo3 = {
@@ -162,6 +213,7 @@ int main(void) {
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
+		.display_mutex = &display,
 	};
 
 	t_philo philo4 = {
@@ -173,6 +225,7 @@ int main(void) {
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
+		.display_mutex = &display,
 	};
 
 	pthread_t thread1;
