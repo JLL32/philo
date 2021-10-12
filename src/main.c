@@ -157,6 +157,7 @@ t_data get_data(int argc, char** argv, int *err)
 void panic(char *err_msg)
 {
 	write(0, err_msg, strlen(err_msg));
+	write(0, "\n", 1);
 	exit(EXIT_FAILURE);
 }
 
@@ -186,32 +187,42 @@ t_philo *create_philos(t_data data)
 	return philos;
 }
 
-int main(int argc, char **argv) {
-
+void start_simulation(t_data data, int *err)
+{
 	pthread_mutex_t display;
-	static int err;
-	const t_data data = get_data(argc, argv, &err);
+	size_t i;
 	const size_t starting_time = get_time();
-	if (err)
-		panic("Invalid arguments 😱");
-	t_philo *philos = create_philos(data);
-	/* init_philos(create_philos(data)); */
+	t_philo *philo_list = create_philos(data);
+
 	pthread_mutex_init(&display, NULL);
-	size_t i = 0;
+	i = 0;
 	while(i < data.n_philo)
 	{
-		philos[i].starting_time = starting_time;
-		philos[i].first_starting_time = starting_time;
-		philos[i].display_mutex = &display;
-		pthread_create(&(philos[i].thread_id), NULL, init, &philos[i]);
+		philo_list[i].starting_time = starting_time;
+		philo_list[i].first_starting_time = starting_time;
+		philo_list[i].display_mutex = &display;
+		*err = pthread_create(&(philo_list[i].thread_id), NULL, init, &philo_list[i]);
+		if (*err)
+			return ;
 		i++;
 	}
 	i = 0;
 	while (i < data.n_philo)
 	{
-		pthread_join(philos[i].thread_id, NULL);
+		pthread_join(philo_list[i].thread_id, NULL);
 		i++;
 	}
+}
+
+int main(int argc, char **argv) {
+
+	static int err;
+	const t_data data = get_data(argc, argv, &err);
+	if (err)
+		panic("Invalid arguments 😱");
+	start_simulation(data, &err);
+	if (err)
+		panic("Something went wrong with the threads 😱");
 	// freee philos and the data inside
 	// free pthread_t
 }
