@@ -1,5 +1,5 @@
 CC=gcc
-SRC=src/main.c
+SRC=src/main.c src/parse_arg.c
 INCLUDE=include/*.h
 DEPS= $(SRC) $(INCLUDE)
 CFLAGS=-Wall -Wextra -Werror

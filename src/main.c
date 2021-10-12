@@ -141,34 +141,46 @@ t_data get_data(int argc, char** argv, int *err)
 		*err = 1;
 		return (t_data){};
 	}
-	n_philo = ft_atoi_pos(argv[1]);
-	life_time = ft_atoi_pos(argv[2]);
-	time_to_eat = ft_atoi_pos(argv[3]);
-	time_to_sleep = ft_atoi_pos(argv[4]);
+	n_philo = parse_arg_size_t(argv[1], err);
+	life_time = parse_arg_size_t(argv[2], err);
+	time_to_eat = parse_arg_size_t(argv[3], err);
+	time_to_sleep = parse_arg_size_t(argv[4], err);
 	if (argc == 5)
 		eating_times = 1;
 	else
-		eating_times = ft_atoi_pos(argv[5]);
-	if (n_philo == -1 || life_time == -1 || time_to_eat == -1 || time_to_sleep == -1
-		|| eating_times == -1)
-	{
-		*err = 1;
+		eating_times = parse_arg_size_t(argv[5], err);
+	if (*err)
 		return (t_data){};
-	}
-	return (t_data)
-	{
-		.n_philo = n_philo,
-		.life_time = life_time,
-		.time_to_eat = time_to_eat,
-		.time_to_sleep = time_to_sleep,
-		.eating_times = eating_times,
-	};
+	return ((t_data) {n_philo, life_time, time_to_eat, time_to_sleep, eating_times});
 }
 
 void panic(char *err_msg)
 {
 	write(0, err_msg, strlen(err_msg));
 	exit(EXIT_FAILURE);
+}
+
+t_philo *create_philos(t_data data)
+{
+	t_philo **philos;
+	int i;
+	philos = malloc(data.n_philo * sizeof(t_philo *));
+	while(i < data.n_philo)
+	{
+		philos[i] = malloc(sizeof(t_philo));
+		*philos[i] = (t_philo){
+			.id = 1,
+			.time_to_eat = data.time_to_eat,
+			.time_to_sleep = data.time_to_sleep,
+			.life_time = data.life_time,
+			.eating_times = data.eating_times,
+			.starting_time = 0,
+			.first_starting_time = 0,
+			.next = eating,
+		};
+		i++;
+	}
+	return philos;
 }
 
 int main(int argc, char **argv) {
@@ -179,13 +191,14 @@ int main(int argc, char **argv) {
 	const size_t starting_time = get_time();
 	if (err)
 		panic("Invalid arguments 😱");
+	const t_philo *philo = create_philos(data);
 	pthread_mutex_init(&display, NULL);
 	t_philo philo = {
 		.id = 1,
-		.time_to_eat = 200,
-		.time_to_sleep = 200,
-		.life_time = 410,
-		.eating_times = 2,
+		.time_to_eat = data.time_to_eat,
+		.time_to_sleep = data.time_to_sleep,
+		.life_time = data.life_time,
+		.eating_times = data.eating_times,
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
@@ -194,10 +207,10 @@ int main(int argc, char **argv) {
 
 	t_philo philo2 = {
 		.id = 2,
-		.time_to_eat = 200,
-		.time_to_sleep = 200,
-		.life_time = 410,
-		.eating_times = 2,
+		.time_to_eat = data.time_to_eat,
+		.time_to_sleep = data.time_to_sleep,
+		.life_time = data.life_time,
+		.eating_times = data.eating_times,
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
@@ -206,10 +219,10 @@ int main(int argc, char **argv) {
 
 	t_philo philo3 = {
 		.id = 3,
-		.time_to_eat = 200,
-		.time_to_sleep = 200,
-		.life_time = 410,
-		.eating_times = 2,
+		.time_to_eat = data.time_to_eat,
+		.time_to_sleep = data.time_to_sleep,
+		.life_time = data.life_time,
+		.eating_times = data.eating_times,
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,
@@ -218,10 +231,10 @@ int main(int argc, char **argv) {
 
 	t_philo philo4 = {
 		.id = 4,
-		.time_to_eat = 200,
-		.time_to_sleep = 200,
-		.life_time = 410,
-		.eating_times = 2,
+		.time_to_eat = data.time_to_eat,
+		.time_to_sleep = data.time_to_sleep,
+		.life_time = data.life_time,
+		.eating_times = data.eating_times,
 		.starting_time = starting_time,
 		.first_starting_time = starting_time,
 		.next = eating,

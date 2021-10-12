@@ -13,7 +13,7 @@ typedef void state_fn(t_philo *philo);
 
 typedef struct s_philo
 {
-	const int id;
+	 int id;
 	const size_t time_to_eat;
 	const size_t time_to_sleep;
 	const size_t life_time;
