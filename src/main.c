@@ -18,7 +18,6 @@
 
 #include "parse_arg.h"
 
-
 void block_thread(size_t ms)
 {
 	const size_t micro_s = ms * 1000;
@@ -50,9 +49,24 @@ void put_state(const t_philo *philo, char *state)
 /*
 ** NOTE: Call it only when you are 100% sure that life_time >= time_elapsed
 */
+
 size_t remaining_time(const t_philo *philo)
 {
 	return (philo->life_time - time_elapsed(philo->starting_time));
+}
+
+void pick_forks(t_philo *philo)
+{
+	pthread_mutex_lock(philo->l_fork);
+	put_state(philo, HAS_FORK);
+	pthread_mutex_lock(philo->r_fork);
+	put_state(philo, HAS_FORK);
+}
+
+void put_forks(t_philo *philo)
+{
+	pthread_mutex_unlock(philo->l_fork);
+	pthread_mutex_unlock(philo->r_fork);
 }
 
 void eating(t_philo *philo)
@@ -67,8 +81,6 @@ void eating(t_philo *philo)
 		philo->next = dead;
 		return;
 	}
-	put_state(philo, HAS_FORK);
-	put_state(philo, HAS_FORK);
 	put_state(philo, EATING);
 	if (remaining_time(philo) > philo->time_to_eat)
 	{
@@ -76,6 +88,7 @@ void eating(t_philo *philo)
 	}
 	else
 		block_thread(remaining_time(philo));
+	put_forks(philo);
 	philo->next = sleeping;
 	philo->eating_times--;
 }
@@ -99,11 +112,10 @@ void sleeping(t_philo *philo)
 
 void thinking(t_philo *philo)
 {
-	/* block_thread(remaining_time(philo)); */
 	if (philo->eating_times)
 	{
-		// unlock a fork here
 		put_state(philo, THINKING);
+		pick_forks(philo);
 		philo->next = eating;
 		philo->starting_time = get_time();
 	}
@@ -117,11 +129,15 @@ void dead(t_philo *philo)
 	put_state(philo, DEAD);
 }
 
+size_t number_of_philos;
+
 void *init(void *p)
 {
 	t_philo *philo = p;
+	if (philo->id % 2 == 0 && number_of_philos != 1)
+		block_thread(philo->time_to_eat);
+	pick_forks(philo);
 	philo->starting_time = get_time();
-	// NOTE: what to do if eating time is 0, should the philo start thinking until time is out?
 	while(philo->next)
 	{
 		philo->next(philo);
@@ -157,7 +173,7 @@ t_data get_data(int argc, char** argv, int *err)
 
 void panic(char *err_msg)
 {
-	write(0, err_msg, strlen(err_msg));
+	write(0, err_msg, strlen(err_msg)); // NOTE: replace strlen later
 	write(0, "\n", 1);
 	exit(EXIT_FAILURE);
 }
@@ -243,6 +259,7 @@ int main(int argc, char **argv) {
 	const t_data data = get_data(argc, argv, &err);
 	if (err)
 		panic("Invalid arguments 😱");
+	number_of_philos = data.n_philo;
 	start_simulation(data, &err);
 	if (err)
 		panic("Something went wrong with the threads 😱");
