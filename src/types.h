@@ -1,11 +1,20 @@
-#include <unistd.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/_types/_size_t.h>
-#include <time.h>
-#include <unistd.h>
-#include <limits.h>
+#ifndef TYPES_H
+# define TYPES_H
+# include <unistd.h>
+# include <pthread.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <sys/_types/_size_t.h>
+# include <time.h>
+# include <unistd.h>
+# include <limits.h>
+# define HAS_FORK "has taken a fork"
+# define EATING "is eating"
+# define SLEEPING "is sleeping"
+# define THINKING "is thinking"
+# define DEAD "died"
+
+size_t number_of_philos;
 
 typedef struct s_philo t_philo;
 
@@ -35,5 +44,4 @@ typedef struct s_data
 	const size_t time_to_sleep;
 	const size_t eating_times;
 } t_data;
-
-state_fn eating, sleeping, thinking, dead;
+#endif

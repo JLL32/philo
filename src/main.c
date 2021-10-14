@@ -1,149 +1,6 @@
-#include "../include/philo.h"
-#include <pthread.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/_pthread/_pthread_mutex_t.h>
-#include <sys/_types/_size_t.h>
-#include <sys/_types/_timeval.h>
-#include <unistd.h>
-#include <sys/time.h>
-
-#define HAS_FORK "has taken a fork"
-#define EATING "is eating"
-#define SLEEPING "is sleeping"
-#define THINKING "is thinking"
-#define DEAD "died"
-
+#include "philo.h"
+#include "time.h"
 #include "parse_arg.h"
-
-void block_thread(size_t ms)
-{
-	const size_t micro_s = ms * 1000;
-	usleep(micro_s);
-}
-
-size_t get_time()
-{
-	struct timeval time;
-
-	gettimeofday(&time, NULL);
-	return (time.tv_sec * 1000 + time.tv_usec / 1000);
-}
-
-size_t time_elapsed(size_t starting_time)
-{
-	return (get_time() - starting_time);
-}
-
-void put_state(const t_philo *philo, char *state)
-{
-	pthread_mutex_lock(philo->display_mutex);
-	printf("%lu\t\t %d %s\n", time_elapsed(philo->first_starting_time), philo->id, state);
-	if (philo->next == NULL)
-		exit(0);
-	pthread_mutex_unlock(philo->display_mutex);
-}
-
-/*
-** NOTE: Call it only when you are 100% sure that life_time >= time_elapsed
-*/
-
-size_t remaining_time(const t_philo *philo)
-{
-	return (philo->life_time - time_elapsed(philo->starting_time));
-}
-
-void pick_forks(t_philo *philo)
-{
-	pthread_mutex_lock(philo->l_fork);
-	put_state(philo, HAS_FORK);
-	pthread_mutex_lock(philo->r_fork);
-	put_state(philo, HAS_FORK);
-}
-
-void put_forks(t_philo *philo)
-{
-	pthread_mutex_unlock(philo->l_fork);
-	pthread_mutex_unlock(philo->r_fork);
-}
-
-void eating(t_philo *philo)
-{
-	if (philo->eating_times == 0)
-	{
-		philo->next = dead;
-		return ;
-	}
-	if (time_elapsed(philo->starting_time) >= philo->life_time)
-	{
-		philo->next = dead;
-		return;
-	}
-	put_state(philo, EATING);
-	if (remaining_time(philo) > philo->time_to_eat)
-	{
-		block_thread(philo->time_to_eat);
-	}
-	else
-		block_thread(remaining_time(philo));
-	put_forks(philo);
-	philo->next = sleeping;
-	philo->eating_times--;
-}
-
-void sleeping(t_philo *philo)
-{
-	// NOTE: remaining_life_time can't be negative because it gets updated in in eating()
-	if (remaining_time(philo) > philo->time_to_sleep)
-	{
-		put_state(philo, SLEEPING);
-		block_thread(philo->time_to_sleep);
-		philo->next = thinking;
-	}
-	else
-	{
-		put_state(philo, SLEEPING);
-		block_thread(remaining_time(philo));
-		philo->next = dead;
-	}
-}
-
-void thinking(t_philo *philo)
-{
-	if (philo->eating_times)
-	{
-		put_state(philo, THINKING);
-		pick_forks(philo);
-		philo->next = eating;
-		philo->starting_time = get_time();
-	}
-	else
-		philo->next = dead;
-}
-
-void dead(t_philo *philo)
-{
-	philo->next = NULL;
-	put_state(philo, DEAD);
-}
-
-size_t number_of_philos;
-
-void *init(void *p)
-{
-	t_philo *philo = p;
-	if (philo->id % 2 == 0 && number_of_philos != 1)
-		block_thread(philo->time_to_eat);
-	pick_forks(philo);
-	philo->starting_time = get_time();
-	while(philo->next)
-	{
-		philo->next(philo);
-	}
-	return philo;
-}
 
 t_data get_data(int argc, char** argv, int *err)
 {
@@ -169,13 +26,6 @@ t_data get_data(int argc, char** argv, int *err)
 	if (*err)
 		return (t_data){};
 	return ((t_data) {n_philo, life_time, time_to_eat, time_to_sleep, eating_times});
-}
-
-void panic(char *err_msg)
-{
-	write(0, err_msg, strlen(err_msg)); // NOTE: replace strlen later
-	write(0, "\n", 1);
-	exit(EXIT_FAILURE);
 }
 
 t_philo *create_philos(t_data data)
@@ -204,23 +54,6 @@ t_philo *create_philos(t_data data)
 		i++;
 	}
 	return philos;
-}
-
-pthread_mutex_t *create_forks(size_t n, int *err)
-{
-	pthread_mutex_t *forks;
-	size_t i;
-	
-	forks = malloc(sizeof(*forks) * n);
-	i = 0;
-	while(i < n)
-	{
-		*err = pthread_mutex_init(&forks[i], NULL);
-		if (*err)
-			return NULL;
-		i++;
-	}
-	return (forks);
 }
 
 void start_simulation(t_data data, int *err)
