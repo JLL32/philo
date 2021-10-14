@@ -14,8 +14,6 @@
 # define THINKING "is thinking"
 # define DEAD "died"
 
-size_t number_of_philos;
-
 typedef struct s_philo t_philo;
 
 typedef void state_fn(t_philo *philo);
@@ -29,11 +27,17 @@ typedef struct s_philo
 	const size_t life_time;
 	pthread_mutex_t *l_fork;
 	pthread_mutex_t *r_fork;
-	pthread_mutex_t *display_mutex;
 	size_t first_starting_time;
 	size_t starting_time;
 	size_t eating_times;
 	state_fn *next;
+	struct 
+	{
+		size_t number_of_philos;
+		pthread_mutex_t *forks_list;
+		t_philo *philo_list;
+		pthread_mutex_t *display_mutex;
+	} env;
 } t_philo;
 
 typedef struct s_data

@@ -1,6 +1,17 @@
 CC=gcc
-SRC=src/main.c src/parse_arg.c
-INCLUDE=include/*.h
+SRC=src/main.c\
+	src/time.c\
+	src/forks.c\
+	src/philo.c\
+	src/utils.c\
+	src/parse_arg.c
+INCLUDE=src/time.h\
+	src/forks.h\
+	src/philo.h\
+	src/utils.h\
+	src/parse_arg.h\
+	src/types.h
+
 DEPS= $(SRC) $(INCLUDE)
 CFLAGS=-Wall -Wextra -Werror
 DFLAGS=-g -fsanitize=address

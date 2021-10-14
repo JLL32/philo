@@ -3,7 +3,7 @@
 void *init(void *p)
 {
 	t_philo *philo = p;
-	if (philo->id % 2 == 0 && number_of_philos != 1)
+	if (philo->id % 2 == 0 && philo->env.number_of_philos != 1)
 		block_thread(philo->time_to_eat);
 	pick_forks(philo);
 	philo->starting_time = get_time();

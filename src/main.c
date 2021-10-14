@@ -1,6 +1,11 @@
+#include "forks.h"
 #include "philo.h"
 #include "time.h"
 #include "parse_arg.h"
+#include "utils.h"
+#include <string.h>
+#include <sys/_pthread/_pthread_mutex_t.h>
+#include <sys/_types/_size_t.h>
 
 t_data get_data(int argc, char** argv, int *err)
 {
@@ -37,32 +42,37 @@ t_philo *create_philos(t_data data)
 	i = 0;
 	while(i < data.n_philo)
 	{
-		memcpy(&philos[i], &(t_philo){
-			.id = i + 1,
-			.thread_id = 0,
-			.time_to_eat = data.time_to_eat,
-			.time_to_sleep = data.time_to_sleep,
-			.life_time = data.life_time,
-			.eating_times = data.eating_times,
-			.starting_time = 0,
-			.first_starting_time = 0,
-			.next = eating,
-			.display_mutex = NULL,
-			.l_fork = NULL,
-			.r_fork = NULL,
+		memcpy(&philos[i], &(t_philo){ .id = i + 1, .thread_id = 0,
+			.time_to_eat = data.time_to_eat, .time_to_sleep = data.time_to_sleep,
+			.life_time = data.life_time, .eating_times = data.eating_times,
+			.starting_time = 0, .first_starting_time = 0, .next = eating,
+			.l_fork = NULL, .r_fork = NULL,
+			.env.display_mutex = NULL, .env.philo_list = NULL,
+			.env.forks_list = NULL, .env.number_of_philos = 0,
 		}, sizeof(t_philo)); // NOTE: replace memcpy later
 		i++;
 	}
 	return philos;
 }
 
-void start_simulation(t_data data, int *err)
+void await(t_philo *philo_list, size_t size)
+{
+	size_t i;
+
+	i = 0;
+	while (i < size)
+	{
+		pthread_join(philo_list[i].thread_id, NULL);
+		i++;
+	}
+}
+
+void start_simulation(t_data data,
+	t_philo *philo_list, pthread_mutex_t *forks_list, int *err)
 {
 	pthread_mutex_t display;
 	size_t i;
 	const size_t starting_time = get_time();
-	t_philo *philo_list = create_philos(data);
-	pthread_mutex_t *forks = create_forks(data.n_philo, err);
 
 	pthread_mutex_init(&display, NULL);
 	i = 0;
@@ -70,32 +80,42 @@ void start_simulation(t_data data, int *err)
 	{
 		philo_list[i].starting_time = starting_time;
 		philo_list[i].first_starting_time = starting_time;
-		philo_list[i].display_mutex = &display;
-		philo_list[i].l_fork = &forks[i];
-		philo_list[i].r_fork = &forks[(i + 1) % data.n_philo];
+		philo_list[i].l_fork = &forks_list[i];
+		philo_list[i].r_fork = &forks_list[(i + 1) % data.n_philo];
+		philo_list[i].env.number_of_philos = data.n_philo;
+		philo_list[i].env.philo_list = philo_list;
+		philo_list[i].env.display_mutex = &display;
+		philo_list[i].env.forks_list = forks_list;
 		*err = pthread_create(&(philo_list[i].thread_id), NULL, init, &philo_list[i]);
 		if (*err)
+		{
+			free_all(&philo_list[i]);
 			return ;
+		}
 		i++;
 	}
-	i = 0;
-	while (i < data.n_philo)
-	{
-		pthread_join(philo_list[i].thread_id, NULL);
-		i++;
-	}
+	await(philo_list, data.n_philo);
 }
 
-int main(int argc, char **argv) {
-
+int main(int argc, char **argv)
+{
 	static int err;
+	t_philo *philo_list;
+	pthread_mutex_t *forks_list;
 	const t_data data = get_data(argc, argv, &err);
+
 	if (err)
 		panic("Invalid arguments 😱");
-	number_of_philos = data.n_philo;
-	start_simulation(data, &err);
+	philo_list = create_philos(data);
+	forks_list = create_forks(data.n_philo, &err);
+	if (err)
+	{
+		destroy_forks(forks_list, data.n_philo);
+		free(forks_list);
+		free(philo_list);
+		panic("Something went wrong with the forks 😱");
+	}
+	start_simulation(data,philo_list, forks_list, &err);
 	if (err)
 		panic("Something went wrong with the threads 😱");
-	// freee philos and the data inside
-	// free pthread_t
 }
