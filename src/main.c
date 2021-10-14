@@ -3,6 +3,9 @@
 #include "time.h"
 #include "parse_arg.h"
 #include "utils.h"
+#include <malloc/_malloc.h>
+#include <pthread.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/_pthread/_pthread_mutex_t.h>
 #include <sys/_types/_size_t.h>
@@ -13,7 +16,7 @@ t_data get_data(int argc, char** argv, int *err)
 	size_t life_time;
 	size_t time_to_eat;
 	size_t time_to_sleep;
-	size_t eating_times;
+	t_eating_times eating_times;
 
 	if (argc < 5 || argc > 6)
 	{
@@ -25,9 +28,11 @@ t_data get_data(int argc, char** argv, int *err)
 	time_to_eat = parse_arg_size_t(argv[3], err);
 	time_to_sleep = parse_arg_size_t(argv[4], err);
 	if (argc == 5)
-		eating_times = 1;
+	{
+		eating_times = (t_eating_times) {1, true};
+	}
 	else
-		eating_times = parse_arg_size_t(argv[5], err);
+		eating_times = (t_eating_times){parse_arg_size_t(argv[5], err), false};
 	if (*err)
 		return (t_data){};
 	return ((t_data) {n_philo, life_time, time_to_eat, time_to_sleep, eating_times});
@@ -46,8 +51,8 @@ t_philo *create_philos(t_data data)
 			.time_to_eat = data.time_to_eat, .time_to_sleep = data.time_to_sleep,
 			.life_time = data.life_time, .eating_times = data.eating_times,
 			.starting_time = 0, .first_starting_time = 0, .next = eating,
-			.l_fork = NULL, .r_fork = NULL,
-			.env.display_mutex = NULL, .env.philo_list = NULL,
+			.l_fork = NULL, .r_fork = NULL, .env.display_mutex = NULL,
+			.env.philo_list = NULL,
 			.env.forks_list = NULL, .env.number_of_philos = 0,
 		}, sizeof(t_philo)); // NOTE: replace memcpy later
 		i++;
@@ -118,4 +123,8 @@ int main(int argc, char **argv)
 	start_simulation(data,philo_list, forks_list, &err);
 	if (err)
 		panic("Something went wrong with the threads 😱");
+	destroy_forks(forks_list, data.n_philo);
+	free(forks_list);
+	free(philo_list);
+	pthread_mutex_destroy(philo_list[0].env.display_mutex);
 }

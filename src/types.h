@@ -8,6 +8,7 @@
 # include <time.h>
 # include <unistd.h>
 # include <limits.h>
+# include <stdbool.h>
 # define HAS_FORK "has taken a fork"
 # define EATING "is eating"
 # define SLEEPING "is sleeping"
@@ -17,6 +18,12 @@
 typedef struct s_philo t_philo;
 
 typedef void state_fn(t_philo *philo);
+
+typedef struct s_eating_times
+{
+	size_t n;
+	bool always;
+} t_eating_times;
 
 typedef struct s_philo
 {
@@ -29,7 +36,7 @@ typedef struct s_philo
 	pthread_mutex_t *r_fork;
 	size_t first_starting_time;
 	size_t starting_time;
-	size_t eating_times;
+	t_eating_times eating_times;
 	state_fn *next;
 	struct 
 	{
@@ -46,6 +53,7 @@ typedef struct s_data
 	const size_t life_time;
 	const size_t time_to_eat;
 	const size_t time_to_sleep;
-	const size_t eating_times;
+	const t_eating_times eating_times;
 } t_data;
+
 #endif
