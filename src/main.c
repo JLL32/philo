@@ -100,6 +100,7 @@ void start_simulation(t_data data,
 		i++;
 	}
 	await(philo_list, data.n_philo);
+	free_all(&philo_list[0]);
 }
 
 int main(int argc, char **argv)
@@ -123,8 +124,4 @@ int main(int argc, char **argv)
 	start_simulation(data,philo_list, forks_list, &err);
 	if (err)
 		panic("Something went wrong with the threads 😱");
-	destroy_forks(forks_list, data.n_philo);
-	free(forks_list);
-	free(philo_list);
-	pthread_mutex_destroy(philo_list[0].env.display_mutex);
 }
