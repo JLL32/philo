@@ -1,4 +1,5 @@
 #include "time.h"
+#include <stddef.h>
 
 void block_thread(size_t ms)
 {
@@ -19,11 +20,11 @@ size_t time_elapsed(size_t starting_time)
 	return (get_time() - starting_time);
 }
 
-/*
-** NOTE: Call it only when you are 100% sure that life_time >= time_elapsed
-*/
-
 size_t remaining_time(const t_philo *philo)
 {
-	return (philo->life_time - time_elapsed(philo->starting_time));
+	const size_t elapsed = time_elapsed(philo->starting_time);
+	if (philo->life_time > elapsed)
+		return (philo->life_time - elapsed);
+	else
+		return (0);
 }
