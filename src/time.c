@@ -4,7 +4,7 @@
 void block_thread(size_t ms)
 {
 	const size_t micro_s = ms * 1000;
-	usleep(micro_s);
+	usleep(micro_s - 2e3);
 }
 
 size_t get_time()

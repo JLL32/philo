@@ -72,7 +72,11 @@ void thinking(t_philo *philo)
 	if (philo->eating_times.n)
 	{
 		put_state(philo, THINKING);
-		pick_forks(philo);
+		if (pick_forks(philo))
+		{
+			philo->next = dead;
+			return;
+		}
 		philo->next = eating;
 		philo->starting_time = get_time();
 	}
