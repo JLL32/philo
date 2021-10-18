@@ -1,8 +1,9 @@
 #include "utils.h"
 
-size_t ft_strlen(char *s)
+size_t	ft_strlen(char *s)
 {
-	size_t i;
+	size_t	i;
+
 	i = 0;
 	while (s[i])
 	{
@@ -11,16 +12,17 @@ size_t ft_strlen(char *s)
 	return (i);
 }
 
-void panic(char *err_msg)
+void	panic(char *err_msg)
 {
 	write(0, err_msg, ft_strlen(err_msg));
 	write(0, "\n", 1);
 	exit(EXIT_FAILURE);
 }
 
-void destroy_forks(pthread_mutex_t *forks, size_t size)
+void	destroy_forks(pthread_mutex_t *forks, size_t size)
 {
-	size_t i;
+	size_t	i;
+
 	i = 0;
 	while (i < size)
 	{
@@ -29,7 +31,7 @@ void destroy_forks(pthread_mutex_t *forks, size_t size)
 	}
 }
 
-void free_all(t_philo *philo)
+void	free_all(t_philo *philo)
 {
 	pthread_mutex_destroy(philo->env.display_mutex);
 	destroy_forks(philo->env.forks_list, philo->env.number_of_philos);
@@ -37,14 +39,14 @@ void free_all(t_philo *philo)
 	free(philo->env.philo_list);
 }
 
-void put_state(t_philo *philo, char *state)
+void	put_state(t_philo *philo, char *state)
 {
 	pthread_mutex_lock(philo->env.display_mutex);
 	if (*philo->env.stop)
 	{
 		philo->next = NULL;
 		pthread_mutex_unlock(philo->env.display_mutex);
-		return;
+		return ;
 	}
 	printf("%lu\t\t %d %s\n",
 		   time_elapsed(philo->first_starting_time),
