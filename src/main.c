@@ -80,8 +80,7 @@ void	await(t_philo *philo_list, size_t size)
 
 void	start_simulation(t_data data,
 	t_philo *philo_list,
-	pthread_mutex_t *forks_list,
-	int *err)
+	pthread_mutex_t *forks_list)
 {
 	pthread_mutex_t	display;
 	bool			stop;
@@ -127,7 +126,5 @@ int	main(int argc, char **argv)
 		free(philo_list);
 		panic("Something went wrong with the forks 😱");
 	}
-	start_simulation(data, philo_list, forks_list, &err);
-	if (err)
-		panic("Something went wrong with the threads 😱");
+	start_simulation(data, philo_list, forks_list);
 }
