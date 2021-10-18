@@ -2,9 +2,9 @@
 #include "time.h"
 #include "utils.h"
 
-void *init(void *p)
+void	*init(void *p)
 {
-	t_philo *philo;
+	t_philo	*philo;
 
 	philo = p;
 	if (philo->id % 2 == 0 && philo->env.number_of_philos != 1)
@@ -18,14 +18,14 @@ void *init(void *p)
 	else
 		pick_forks(philo);
 	philo->starting_time = get_time();
-	while(philo->next)
+	while (philo->next)
 	{
 		philo->next(philo);
 	}
-	return philo;
+	return (philo);
 }
 
-void eating(t_philo *philo)
+void	eating(t_philo *philo)
 {
 	if (philo->eating_times.n == 0)
 	{
@@ -35,11 +35,11 @@ void eating(t_philo *philo)
 	if (time_elapsed(philo->starting_time) >= philo->life_time)
 	{
 		philo->next = dead;
-		return;
+		return ;
 	}
 	put_state(philo, EATING);
 	if (philo->next == NULL)
-		return;
+		return ;
 	if (remaining_time(philo) > philo->time_to_eat)
 	{
 		block_thread(philo->time_to_eat);
@@ -48,13 +48,12 @@ void eating(t_philo *philo)
 		block_thread(remaining_time(philo));
 	put_forks(philo);
 	philo->next = sleeping;
-	if(philo->eating_times.always == false)
+	if (philo->eating_times.always == false)
 		philo->eating_times.n--;
 }
 
-void sleeping(t_philo *philo)
+void	sleeping(t_philo *philo)
 {
-	// NOTE: remaining_life_time can't be negative because it gets updated in in eating()
 	put_state(philo, SLEEPING);
 	if (philo->next != NULL)
 	{
@@ -71,7 +70,7 @@ void sleeping(t_philo *philo)
 	}
 }
 
-void thinking(t_philo *philo)
+void	thinking(t_philo *philo)
 {
 	if (philo->eating_times.n)
 	{
@@ -81,7 +80,7 @@ void thinking(t_philo *philo)
 			if (pick_forks(philo))
 			{
 				philo->next = dead;
-				return;
+				return ;
 			}
 			philo->next = eating;
 			philo->starting_time = get_time();
@@ -91,9 +90,8 @@ void thinking(t_philo *philo)
 		philo->next = NULL;
 }
 
-void dead(t_philo *philo)
+void	dead(t_philo *philo)
 {
 	philo->next = NULL;
 	put_state(philo, DEAD);
 }
-
