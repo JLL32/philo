@@ -8,7 +8,6 @@ void	ft_memcpy(void *dest, void *src, size_t n)
 
 	cdest = (char *)dest;
 	csrc = (char *)src;
-
 	i = 0;
 	while (i < n)
 	{
