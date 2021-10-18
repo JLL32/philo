@@ -3,6 +3,7 @@
 #include "time.h"
 #include "parse_arg.h"
 #include "utils.h"
+#include "string_utils.h"
 #include <malloc/_malloc.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -47,7 +48,7 @@ t_philo *create_philos(t_data data)
 	i = 0;
 	while(i < data.n_philo)
 	{
-		memcpy(&philos[i], &(t_philo){ .id = i + 1, .thread_id = 0,
+		ft_memcpy(&philos[i], &(t_philo){ .id = i + 1, .thread_id = 0,
 			.time_to_eat = data.time_to_eat, .time_to_sleep = data.time_to_sleep,
 			.life_time = data.life_time, .eating_times = data.eating_times,
 			.starting_time = 0, .first_starting_time = 0, .next = eating,
@@ -59,7 +60,6 @@ t_philo *create_philos(t_data data)
 	}
 	return philos;
 }
-
 
 void await(t_philo *philo_list, size_t size)
 {
