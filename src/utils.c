@@ -13,7 +13,7 @@ size_t ft_strlen(char *s)
 
 void panic(char *err_msg)
 {
-	write(0, err_msg, ft_strlen(err_msg)); // NOTE: replace strlen later
+	write(0, err_msg, ft_strlen(err_msg));
 	write(0, "\n", 1);
 	exit(EXIT_FAILURE);
 }
@@ -40,14 +40,17 @@ void free_all(t_philo *philo)
 void put_state(t_philo *philo, char *state)
 {
 	pthread_mutex_lock(philo->env.display_mutex);
+	if (*philo->env.stop)
+	{
+		philo->next = NULL;
+		pthread_mutex_unlock(philo->env.display_mutex);
+		return;
+	}
 	printf("%lu\t\t %d %s\n",
 		   time_elapsed(philo->first_starting_time),
 		   philo->id,
 		   state);
 	if (philo->next == NULL)
-	{
-		free_all(philo);
-		exit(0);
-	}
+		*philo->env.stop = true;
 	pthread_mutex_unlock(philo->env.display_mutex);
 }

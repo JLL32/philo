@@ -44,6 +44,7 @@ typedef struct s_philo
 		pthread_mutex_t *forks_list;
 		t_philo *philo_list;
 		pthread_mutex_t *display_mutex;
+		bool *stop;
 	} env;
 } t_philo;
 

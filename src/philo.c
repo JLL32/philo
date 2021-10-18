@@ -38,6 +38,8 @@ void eating(t_philo *philo)
 		return;
 	}
 	put_state(philo, EATING);
+	if (philo->next == NULL)
+		return;
 	if (remaining_time(philo) > philo->time_to_eat)
 	{
 		block_thread(philo->time_to_eat);
@@ -53,17 +55,19 @@ void eating(t_philo *philo)
 void sleeping(t_philo *philo)
 {
 	// NOTE: remaining_life_time can't be negative because it gets updated in in eating()
-	if (remaining_time(philo) > philo->time_to_sleep)
+	put_state(philo, SLEEPING);
+	if (philo->next != NULL)
 	{
-		put_state(philo, SLEEPING);
-		block_thread(philo->time_to_sleep);
-		philo->next = thinking;
-	}
-	else
-	{
-		put_state(philo, SLEEPING);
-		block_thread(remaining_time(philo));
-		philo->next = dead;
+		if (remaining_time(philo) > philo->time_to_sleep)
+		{
+			block_thread(philo->time_to_sleep);
+			philo->next = thinking;
+		}
+		else
+		{
+			block_thread(remaining_time(philo));
+			philo->next = dead;
+		}
 	}
 }
 
@@ -72,13 +76,16 @@ void thinking(t_philo *philo)
 	if (philo->eating_times.n)
 	{
 		put_state(philo, THINKING);
-		if (pick_forks(philo))
+		if (philo->next != NULL)
 		{
-			philo->next = dead;
-			return;
+			if (pick_forks(philo))
+			{
+				philo->next = dead;
+				return;
+			}
+			philo->next = eating;
+			philo->starting_time = get_time();
 		}
-		philo->next = eating;
-		philo->starting_time = get_time();
 	}
 	else
 		philo->next = NULL;

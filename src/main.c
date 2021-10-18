@@ -60,6 +60,7 @@ t_philo *create_philos(t_data data)
 	return philos;
 }
 
+
 void await(t_philo *philo_list, size_t size)
 {
 	size_t i;
@@ -76,8 +77,11 @@ void start_simulation(t_data data,
 	t_philo *philo_list, pthread_mutex_t *forks_list, int *err)
 {
 	pthread_mutex_t display;
+	bool stop;
 	size_t i;
 	const size_t starting_time = get_time();
+
+	stop = false;
 
 	pthread_mutex_init(&display, NULL);
 	i = 0;
@@ -91,6 +95,7 @@ void start_simulation(t_data data,
 		philo_list[i].env.philo_list = philo_list;
 		philo_list[i].env.display_mutex = &display;
 		philo_list[i].env.forks_list = forks_list;
+		philo_list[i].env.stop = &stop;
 		*err = pthread_create(&(philo_list[i].thread_id), NULL, init, &philo_list[i]);
 		if (*err)
 		{
