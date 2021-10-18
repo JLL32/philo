@@ -53,7 +53,7 @@ static int	check_arg(char *arg)
 		return (1);
 }
 
-int			parse_arg_size_t(char *arg, int *err)
+int	parse_arg_size_t(char *arg, int *err)
 {
 	int			i;
 	size_t		value;
