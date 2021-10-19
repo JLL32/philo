@@ -1,4 +1,6 @@
 #include "utils.h"
+#include "philo.h"
+#include <string.h>
 
 size_t	ft_strlen(char *s)
 {
@@ -42,16 +44,9 @@ void	free_all(t_philo *philo)
 void	put_state(t_philo *philo, char *state)
 {
 	pthread_mutex_lock(&philo->shared->display_mutex);
-	if (philo->shared->stop)
-	{
-		pthread_mutex_unlock(&philo->shared->display_mutex);
-		return ;
-	}
 	printf("%lu\t\t %d %s\n",
 		   time_elapsed(philo->shared->starting_time),
 		   philo->id,
 		   state);
-	if (philo->next == NULL)
-		philo->shared->stop = true;
 	pthread_mutex_unlock(&philo->shared->display_mutex);
 }
