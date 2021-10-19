@@ -33,26 +33,26 @@ void	destroy_forks(pthread_mutex_t *forks, size_t size)
 
 void	free_all(t_philo *philo)
 {
-	pthread_mutex_destroy(philo->env.display_mutex);
-	destroy_forks(philo->env.forks_list, philo->env.number_of_philos);
-	free(philo->env.forks_list);
-	free(philo->env.philo_list);
+	pthread_mutex_destroy(&philo->shared->display_mutex);
+	destroy_forks(philo->shared->forks_list, philo->shared->number_of_philos);
+	free(philo->shared->forks_list);
+	free(philo->shared->philo_list);
 }
 
 void	put_state(t_philo *philo, char *state)
 {
-	pthread_mutex_lock(philo->env.display_mutex);
-	if (*philo->env.stop)
+	pthread_mutex_lock(&philo->shared->display_mutex);
+	if (philo->shared->stop)
 	{
 		philo->next = NULL;
-		pthread_mutex_unlock(philo->env.display_mutex);
+		pthread_mutex_unlock(&philo->shared->display_mutex);
 		return ;
 	}
 	printf("%lu\t\t %d %s\n",
-		   time_elapsed(philo->first_starting_time),
+		   time_elapsed(philo->shared->starting_time),
 		   philo->id,
 		   state);
 	if (philo->next == NULL)
-		*philo->env.stop = true;
-	pthread_mutex_unlock(philo->env.display_mutex);
+		philo->shared->stop = true;
+	pthread_mutex_unlock(&philo->shared->display_mutex);
 }

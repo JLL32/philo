@@ -22,7 +22,7 @@ NAME=philo
 all: $(NAME)
 
 $(NAME): $(DEPS)
-	$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	$(CC) $(DFLAGS) $(CFLAGS) $(SRC) -o $(NAME)
 
 clean:
 	rm -rf $(NAME)

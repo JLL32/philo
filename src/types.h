@@ -25,14 +25,16 @@ typedef struct s_eating_times
 	bool	always;
 }	t_eating_times;
 
-typedef struct s_env
+typedef struct s_shared
 {
 	size_t			number_of_philos;
 	pthread_mutex_t	*forks_list;
 	t_philo			*philo_list;
-	pthread_mutex_t	*display_mutex;
-	bool			*stop;
-}	t_env;
+	pthread_mutex_t	display_mutex;
+	size_t			starting_time;
+	bool			stop;
+	size_t			total_meals;
+}	t_shared;
 
 typedef struct s_philo
 {
@@ -43,11 +45,10 @@ typedef struct s_philo
 	const size_t	life_time;
 	pthread_mutex_t	*l_fork;
 	pthread_mutex_t	*r_fork;
-	size_t			first_starting_time;
 	size_t			starting_time;
 	t_eating_times	eating_times;
 	t_state_fn		*next;
-	t_env			env;
+	t_shared		*shared;
 }	t_philo;
 
 typedef struct s_data
