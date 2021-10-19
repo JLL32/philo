@@ -27,25 +27,10 @@ void	*init(void *p)
 
 void	eating(t_philo *philo)
 {
-	if (philo->eating_times.n == 0)
-	{
-		philo->next = NULL;
-		return ;
-	}
-	if (time_elapsed(philo->starting_time) >= philo->life_time)
-	{
-		philo->next = dead;
-		return ;
-	}
 	put_state(philo, EATING);
 	if (philo->next == NULL)
 		return ;
-	if (remaining_time(philo) > philo->time_to_eat)
-	{
-		block_thread(philo->time_to_eat);
-	}
-	else
-		block_thread(remaining_time(philo));
+	block_thread(philo->time_to_eat);
 	put_forks(philo);
 	philo->next = sleeping;
 	if (philo->eating_times.always == false)
@@ -55,39 +40,25 @@ void	eating(t_philo *philo)
 void	sleeping(t_philo *philo)
 {
 	put_state(philo, SLEEPING);
-	if (philo->next != NULL)
-	{
-		if (remaining_time(philo) > philo->time_to_sleep)
-		{
-			block_thread(philo->time_to_sleep);
-			philo->next = thinking;
-		}
-		else
-		{
-			block_thread(remaining_time(philo));
-			philo->next = dead;
-		}
-	}
+	if (philo->next == NULL)
+		return ;
+	block_thread(philo->time_to_sleep);
+	philo->next = thinking;
 }
 
 void	thinking(t_philo *philo)
 {
-	if (philo->eating_times.n)
+	if (philo->eating_times.n == 0)
 	{
-		put_state(philo, THINKING);
-		if (philo->next != NULL)
-		{
-			if (pick_forks(philo))
-			{
-				philo->next = dead;
-				return ;
-			}
-			philo->next = eating;
-			philo->starting_time = get_time();
-		}
-	}
-	else
 		philo->next = NULL;
+		return ;
+	}
+	put_state(philo, THINKING);
+	if (philo->next == NULL)
+		return ;
+	pick_forks(philo);
+	philo->next = eating;
+	philo->starting_time = get_time();
 }
 
 void	dead(t_philo *philo)

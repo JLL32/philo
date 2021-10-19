@@ -1,25 +1,12 @@
 #include "forks.h"
 #include "time.h"
 
-int	pick_forks(t_philo *philo)
+void pick_forks(t_philo *philo)
 {
 	pthread_mutex_lock(philo->l_fork);
-	if (remaining_time(philo) == 0)
-	{
-		return (1);
-	}
 	put_state(philo, HAS_FORK);
-	if (philo->next == NULL)
-		return (1);
 	pthread_mutex_lock(philo->r_fork);
-	if (remaining_time(philo) == 0)
-	{
-		return (1);
-	}
 	put_state(philo, HAS_FORK);
-	if (philo->next == NULL)
-		return (1);
-	return (0);
 }
 
 void	put_forks(t_philo *philo)
