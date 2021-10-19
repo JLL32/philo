@@ -102,7 +102,7 @@ void	*monitor_fn(void *arg)
 	t_philo	*philo;
 
 	philo = arg;
-	while (philo->eating_times.n)
+	while (philo->eating_times.n || philo->shared->stop)
 	{
 		if (remaining_time(philo) == 0)
 		{
@@ -123,7 +123,6 @@ void	await_monitors(pthread_t *monitors, size_t size)
 		pthread_join(monitors[i], NULL);
 		i++;
 	}
-	free(monitors);
 }
 
 void	start_simulation(t_data data,
@@ -142,11 +141,13 @@ void	start_simulation(t_data data,
 		philo_list[i].l_fork = &forks_list[i];
 		philo_list[i].r_fork = &forks_list[(i + 1) % data.n_philo];
 		philo_list[i].shared = shared;
+		pthread_mutex_init(&philo_list[i].protect_state, NULL);
 		pthread_create(&(philo_list[i].thread_id), NULL, init, &philo_list[i]);
 		pthread_create(&monitors[i], NULL, monitor_fn, &philo_list[i]);
 		i++;
 	}
 	await_monitors(monitors, data.n_philo);
+	free(monitors);
 	free_all(&philo_list[0]);
 }
 

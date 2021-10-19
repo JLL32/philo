@@ -44,7 +44,6 @@ void	put_state(t_philo *philo, char *state)
 	pthread_mutex_lock(&philo->shared->display_mutex);
 	if (philo->shared->stop)
 	{
-		philo->next = NULL;
 		pthread_mutex_unlock(&philo->shared->display_mutex);
 		return ;
 	}

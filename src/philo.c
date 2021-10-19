@@ -1,6 +1,14 @@
 #include "philo.h"
 #include "time.h"
 #include "utils.h"
+#include <pthread.h>
+
+void set_state(t_philo *philo, t_state_fn next_state)
+{
+	pthread_mutex_lock(&philo->protect_state);
+	philo->next = next_state;
+	pthread_mutex_unlock(&philo->protect_state);
+}
 
 void	*init(void *p)
 {
@@ -13,7 +21,7 @@ void	*init(void *p)
 	{
 		put_state(philo, HAS_FORK);
 		block_thread(philo->life_time);
-		philo->next = dead;
+		set_state(philo, dead);
 	}
 	else
 		pick_forks(philo);
@@ -32,7 +40,9 @@ void	eating(t_philo *philo)
 		return ;
 	block_thread(philo->time_to_eat);
 	put_forks(philo);
+	pthread_mutex_lock(&philo->protect_state);
 	philo->next = sleeping;
+	pthread_mutex_unlock(&philo->protect_state);
 	if (philo->eating_times.always == false)
 		philo->eating_times.n--;
 }
@@ -43,26 +53,32 @@ void	sleeping(t_philo *philo)
 	if (philo->next == NULL)
 		return ;
 	block_thread(philo->time_to_sleep);
-	philo->next = thinking;
+	pthread_mutex_lock(&philo->protect_state);
+	set_state(philo, thinking);
+	pthread_mutex_unlock(&philo->protect_state);
 }
 
 void	thinking(t_philo *philo)
 {
 	if (philo->eating_times.n == 0)
 	{
-		philo->next = NULL;
+		pthread_mutex_lock(&philo->protect_state);
+		set_state(philo, NULL);
+		pthread_mutex_unlock(&philo->protect_state);
 		return ;
 	}
 	put_state(philo, THINKING);
 	if (philo->next == NULL)
 		return ;
 	pick_forks(philo);
-	philo->next = eating;
+	pthread_mutex_lock(&philo->protect_state);
+	set_state(philo, eating);
 	philo->starting_time = get_time();
+	pthread_mutex_unlock(&philo->protect_state);
 }
 
 void	dead(t_philo *philo)
 {
-	philo->next = NULL;
+	set_state(philo, NULL);
 	put_state(philo, DEAD);
 }

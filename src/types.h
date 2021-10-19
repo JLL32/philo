@@ -49,6 +49,7 @@ typedef struct s_philo
 	t_eating_times	eating_times;
 	t_state_fn		*next;
 	t_shared		*shared;
+	pthread_mutex_t	protect_state;
 }	t_philo;
 
 typedef struct s_data
