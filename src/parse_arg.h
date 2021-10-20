@@ -2,6 +2,7 @@
 # define PARSE_ARG_H
 # include <limits.h>
 # include <ctype.h>
+# include "types.h"
 
-int			parse_arg_size_t(char *arg, int *err);
+t_data	get_data(int argc, char **argv, int *err);
 #endif

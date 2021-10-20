@@ -19,11 +19,6 @@ static int	chk_arg_length(char *arg)
 	return (len);
 }
 
-static int	ft_isdigit(int c)
-{
-	return (c >= '0' && c <= '9');
-}
-
 static int	is_numeric_positive(char *arg)
 {
 	int	i;
@@ -35,7 +30,7 @@ static int	is_numeric_positive(char *arg)
 		i++;
 	while (arg[i])
 	{
-		if (!ft_isdigit(arg[i]))
+		if(!(arg[i] >= '0' && arg[i] <= '9'))
 			return (0);
 		i++;
 	}
@@ -53,7 +48,7 @@ static int	check_arg(char *arg)
 		return (1);
 }
 
-int	parse_arg_size_t(char *arg, int *err)
+static int	parse_arg_size_t(char *arg, int *err)
 {
 	int			i;
 	size_t		value;
@@ -75,4 +70,33 @@ int	parse_arg_size_t(char *arg, int *err)
 		return (0);
 	}
 	return (value);
+}
+
+t_data	get_data(int argc, char **argv, int *err)
+{
+	size_t			n_philo;
+	size_t			life_time;
+	size_t			time_to_eat;
+	size_t			time_to_sleep;
+	t_eating_times	eating_times;
+
+	if (argc < 5 || argc > 6)
+	{
+		*err = 1;
+		return ((t_data){});
+	}
+	n_philo = parse_arg_size_t(argv[1], err);
+	life_time = parse_arg_size_t(argv[2], err);
+	time_to_eat = parse_arg_size_t(argv[3], err);
+	time_to_sleep = parse_arg_size_t(argv[4], err);
+	if (argc == 5)
+	{
+		eating_times = (t_eating_times){1, true};
+	}
+	else
+		eating_times = (t_eating_times){parse_arg_size_t(argv[5], err), false};
+	if (*err)
+		return ((t_data){});
+	return (
+		(t_data){n_philo, life_time, time_to_eat, time_to_sleep, eating_times});
 }
