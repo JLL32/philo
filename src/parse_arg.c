@@ -30,7 +30,7 @@ static int	is_numeric_positive(char *arg)
 		i++;
 	while (arg[i])
 	{
-		if(!(arg[i] >= '0' && arg[i] <= '9'))
+		if (!(arg[i] >= '0' && arg[i] <= '9'))
 			return (0);
 		i++;
 	}

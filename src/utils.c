@@ -39,9 +39,8 @@ void	destroy_forks(pthread_mutex_t *forks, size_t size)
 
 void	free_all(t_philo *philo_list, pthread_mutex_t *forks_list)
 {
-	
 	size_t	i;
-	size_t size;
+	size_t	size;
 
 	size = philo_list[0].shared->number_of_philos;
 	i = 0;

@@ -25,9 +25,10 @@ size_t	time_elapsed(size_t starting_time)
 
 size_t	remaining_time(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->protect_state);
-	const size_t	elapsed = time_elapsed(philo->starting_time);
+	size_t	elapsed;
 
+	pthread_mutex_lock(&philo->protect_state);
+	elapsed = time_elapsed(philo->starting_time);
 	if (philo->life_time > elapsed)
 	{
 		pthread_mutex_unlock(&philo->protect_state);

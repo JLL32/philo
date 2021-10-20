@@ -1,7 +1,7 @@
 #include "forks.h"
 #include "time.h"
 
-void pick_forks(t_philo *philo)
+void	pick_forks(t_philo *philo)
 {
 	pthread_mutex_lock(philo->l_fork);
 	put_state(philo, HAS_FORK);

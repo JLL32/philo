@@ -4,13 +4,6 @@
 #include <pthread.h>
 #include <stdbool.h>
 
-void set_state(t_philo *philo, t_state_fn next_state)
-{
-	pthread_mutex_lock(&philo->protect_state);
-	philo->next = next_state;
-	pthread_mutex_unlock(&philo->protect_state);
-}
-
 void	*init(void *p)
 {
 	t_philo	*philo;
@@ -34,7 +27,7 @@ void	eating(t_philo *philo)
 	put_state(philo, EATING);
 	block_thread(philo->time_to_eat);
 	put_forks(philo);
-	set_state(philo, sleeping);
+	philo->next = sleeping;
 	if (philo->eating_times.always == false)
 	{
 		philo->eating_times.n--;
@@ -48,14 +41,14 @@ void	sleeping(t_philo *philo)
 {
 	put_state(philo, SLEEPING);
 	block_thread(philo->time_to_sleep);
-	set_state(philo, thinking);
+	philo->next = thinking;
 }
 
 void	thinking(t_philo *philo)
 {
 	if (philo->eating_times.n == 0)
 	{
-		set_state(philo, NULL);
+		philo->next = NULL;
 		return ;
 	}
 	put_state(philo, THINKING);
@@ -63,14 +56,5 @@ void	thinking(t_philo *philo)
 	pthread_mutex_lock(&philo->protect_state);
 	philo->starting_time = get_time();
 	pthread_mutex_unlock(&philo->protect_state);
-	set_state(philo, eating);
-}
-
-void	dead(t_philo *philo)
-{
-	set_state(philo, NULL);
-	pthread_mutex_lock(&philo->shared->protect);
-	philo->shared->stop = true;
-	pthread_mutex_unlock(&philo->shared->protect);
-	put_state(philo, DEAD);
+	philo->next = eating;
 }

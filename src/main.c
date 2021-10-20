@@ -78,7 +78,6 @@ t_shared	*create_shared(t_data data,
 		.philo_list = philo_list,
 		.display_mutex = display,
 		.starting_time = get_time(),
-		.stop = false,
 		.protect = protect,
 		.total_meals = data.n_philo * data.eating_times.n};
 	return (shared);
