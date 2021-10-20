@@ -135,7 +135,7 @@ int	main(int argc, char **argv)
 	}
 	start_simulation(data, philo_list, forks_list, &err);
 	if (err)
-	{
+		panic("Something went wrong with the simulation 😱");
+	if (err)
 		return (EXIT_FAILURE);
-	}
 }
