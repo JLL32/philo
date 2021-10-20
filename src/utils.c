@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "philo.h"
 #include "types.h"
+#include "string_utils.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -50,6 +51,6 @@ void	put_state(t_philo *philo, char *state)
 		   time_elapsed(philo->shared->starting_time),
 		   philo->id,
 		   state);
-	if (strcmp(state, DEAD) != 0)
+	if (ft_strcmp(state, DEAD) != 0)
 		pthread_mutex_unlock(&philo->shared->display_mutex);
 }
