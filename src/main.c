@@ -72,8 +72,13 @@ void	await(t_philo *philo_list, size_t size)
 	size_t	i;
 
 	i = 0;
-	
-	pthread_mutex_lock(&philo_list[i].shared->protect);
+	while(i < size)
+	{
+		pthread_detach(philo_list[i].thread_id);
+		i++;
+	}
+	i = 0;
+	pthread_mutex_lock(&philo_list[0].shared->protect);
 	while (philo_list[i].shared->total_meals)
 	{
 		pthread_mutex_unlock(&philo_list[i].shared->protect);
@@ -131,7 +136,7 @@ void	start_simulation(t_data data,
 		i++;
 	}
 	await(philo_list, data.n_philo);
-	free_all(&philo_list[0]);
+	free_all(philo_list, forks_list);
 }
 
 int	main(int argc, char **argv)

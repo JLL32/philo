@@ -6,6 +6,6 @@
 size_t	ft_strlen(char *s);
 void	panic(char *err_msg);
 void	put_state(t_philo *philo, char *state);
-void	free_all(t_philo *philo);
+void	free_all(t_philo *philo_list, pthread_mutex_t *forks_list);
 void	destroy_forks(pthread_mutex_t *forks, size_t size);
 #endif

@@ -2,8 +2,10 @@
 #include "philo.h"
 #include "types.h"
 #include "string_utils.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/_pthread/_pthread_mutex_t.h>
 
 size_t	ft_strlen(char *s)
 {
@@ -36,12 +38,25 @@ void	destroy_forks(pthread_mutex_t *forks, size_t size)
 	}
 }
 
-void	free_all(t_philo *philo)
+void	free_all(t_philo *philo_list, pthread_mutex_t *forks_list)
 {
-	pthread_mutex_destroy(&philo->shared->display_mutex);
-	destroy_forks(philo->shared->forks_list, philo->shared->number_of_philos);
-	free(philo->shared->forks_list);
-	free(philo->shared->philo_list);
+	
+	size_t	i;
+	size_t size;
+
+	size = philo_list[0].shared->number_of_philos;
+	i = 0;
+	while (i < size)
+	{
+		pthread_mutex_destroy(&philo_list[i].protect_state);
+		i++;
+	}
+	pthread_mutex_destroy(&philo_list[0].shared->display_mutex);
+	pthread_mutex_destroy(&philo_list[0].shared->protect);
+	destroy_forks(forks_list, philo_list[0].shared->number_of_philos);
+	free(philo_list[0].shared);
+	free(philo_list);
+	free(forks_list);
 }
 
 void	put_state(t_philo *philo, char *state)
