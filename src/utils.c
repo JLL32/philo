@@ -23,7 +23,6 @@ void	panic(char *err_msg)
 {
 	write(0, err_msg, ft_strlen(err_msg));
 	write(0, "\n", 1);
-	exit(EXIT_FAILURE);
 }
 
 void	destroy_forks(pthread_mutex_t *forks, size_t size)
