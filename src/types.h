@@ -4,6 +4,7 @@
 # include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
+#include <sys/_pthread/_pthread_mutex_t.h>
 # include <sys/_types/_size_t.h>
 # include <time.h>
 # include <unistd.h>
@@ -34,6 +35,7 @@ typedef struct s_shared
 	size_t			starting_time;
 	bool			stop;
 	size_t			total_meals;
+	pthread_mutex_t protect;
 }	t_shared;
 
 typedef struct s_philo

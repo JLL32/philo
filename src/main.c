@@ -3,6 +3,7 @@
 #include "philo.h"
 #include "string_utils.h"
 #include "time.h"
+#include "types.h"
 #include "utils.h"
 #include <malloc/_malloc.h>
 #include <pthread.h>
@@ -56,7 +57,7 @@ t_philo	*create_philos(t_data data)
 							 .time_to_sleep = data.time_to_sleep,
 							 .life_time = data.life_time,
 							 .eating_times = data.eating_times,
-							 .starting_time = 0,
+							 .starting_time = get_time(),
 							 .next = eating,
 							 .l_fork = NULL,
 							 .shared = NULL},
@@ -71,10 +72,21 @@ void	await(t_philo *philo_list, size_t size)
 	size_t	i;
 
 	i = 0;
-	while (i < size)
+	
+	pthread_mutex_lock(&philo_list[i].shared->protect);
+	while (philo_list[i].shared->total_meals)
 	{
-		pthread_join(philo_list[i].thread_id, NULL);
-		i++;
+		pthread_mutex_unlock(&philo_list[i].shared->protect);
+		if (remaining_time(&philo_list[i]) == 0)
+		{
+			put_state(&philo_list[i], DEAD);
+			return ;
+		}
+		if (i == size - 1)
+			i = 0;
+		else
+			i++;
+		pthread_mutex_lock(&philo_list[i].shared->protect);
 	}
 }
 
@@ -84,45 +96,20 @@ t_shared *create_shared(t_data data,
 {
 	t_shared		*shared;
 	pthread_mutex_t	display;
+	pthread_mutex_t protect;
 
 	shared = malloc(sizeof(*shared));
 	pthread_mutex_init(&display, NULL);
+	pthread_mutex_init(&protect, NULL);
 	*shared = (t_shared){.number_of_philos = data.n_philo,
 						 .forks_list = forks_list,
 						 .philo_list = philo_list,
 						 .display_mutex = display,
 						 .starting_time = get_time(),
 						 .stop = false,
+						 .protect = protect,
 						 .total_meals = data.n_philo * data.eating_times.n};
 	return (shared);
-}
-
-void	*monitor_fn(void *arg)
-{
-	t_philo	*philo;
-
-	philo = arg;
-	while (philo->eating_times.n || philo->shared->stop)
-	{
-		if (remaining_time(philo) == 0)
-		{
-			put_state(philo, DEAD);
-			break ;
-		}
-	}
-	return (arg);
-}
-
-void	await_monitors(pthread_t *monitors, size_t size)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < size)
-	{
-		pthread_join(monitors[i], NULL);
-		i++;
-	}
 }
 
 void	start_simulation(t_data data,
@@ -131,10 +118,8 @@ void	start_simulation(t_data data,
 {
 	size_t			i;
 	t_shared		*shared;
-	pthread_t		*monitors;
 
 	shared = create_shared(data, philo_list, forks_list);
-	monitors = malloc(sizeof(*monitors) * data.n_philo);
 	i = 0;
 	while (i < data.n_philo)
 	{
@@ -143,11 +128,9 @@ void	start_simulation(t_data data,
 		philo_list[i].shared = shared;
 		pthread_mutex_init(&philo_list[i].protect_state, NULL);
 		pthread_create(&(philo_list[i].thread_id), NULL, init, &philo_list[i]);
-		pthread_create(&monitors[i], NULL, monitor_fn, &philo_list[i]);
 		i++;
 	}
-	await_monitors(monitors, data.n_philo);
-	free(monitors);
+	await(philo_list, data.n_philo);
 	free_all(&philo_list[0]);
 }
 
